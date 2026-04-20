@@ -476,9 +476,7 @@ async function wikiExtractLong(title,lang){
 }
 function plainExtractToHtml(txt){
   if(!txt) return '';
-  const cleaned=txt.replace(/
-/g,'').split('
-').map(s=>s.trim()).filter(Boolean);
+  const cleaned=txt.replace(/\r/g,'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
   const parts=[];
   for(const line of cleaned){
     if(/^={2,}.+={2,}$/.test(line)){
