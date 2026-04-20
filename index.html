@@ -72,6 +72,29 @@ svg{display:block;width:100%;height:auto;min-width:1400px;background:#fff;touch-
 #infoFrame{width:100%;height:58vh;border:0;background:#fff}
 .note2{font-size:13px;color:var(--muted);margin-top:8px}
 .credit{position:fixed;right:12px;bottom:10px;font-size:12px;background:rgba(255,255,255,.92);padding:7px 10px;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+
+.print-note{display:none}
+#printBadge{position:fixed;left:16px;bottom:14px;z-index:9999;background:rgba(255,255,255,.96);border:1px solid #d7e2f1;border-radius:12px;padding:8px 12px;font:700 12px Arial,Helvetica,sans-serif;color:#244a8d;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+body.print-mode{overflow:visible;background:#fff}
+body.print-mode .toolbar, body.print-mode .panel-backdrop, body.print-mode .note2{display:none!important}
+body.print-mode .wrap{height:auto;min-height:auto;padding:6px 10px 10px 10px}
+body.print-mode .card{overflow:visible;border:0;box-shadow:none;padding:0}
+body.print-mode svg{min-width:0;width:100%;height:auto}
+body.print-mode .credit{position:static;display:block;margin:12px 0 0 0;background:none;box-shadow:none;padding:0;font-size:11px}
+body.print-mode.print-lineage .edge-path{opacity:.07!important;stroke-width:1.1!important;stroke-dasharray:none!important;filter:none!important}
+body.print-mode.print-lineage .node-group{opacity:.14!important}
+body.print-mode.print-lineage .edge-path.traced{opacity:1!important;stroke-width:4.6!important;stroke-dasharray:10 7!important;animation:none!important;filter:none!important}
+body.print-mode.print-lineage .node-group.traced,body.print-mode.print-lineage .node-group.selected{opacity:1!important}
+@media print{
+  html,body{height:auto;background:#fff}
+  body{overflow:visible}
+  .toolbar,.panel-backdrop,.note2{display:none!important}
+  .wrap{height:auto!important;min-height:auto!important;padding:4mm}
+  .card{overflow:visible!important;border:0!important;box-shadow:none!important;padding:0!important}
+  .credit{position:static!important;display:block!important;margin-top:5mm;background:none!important;box-shadow:none!important;padding:0!important}
+  #printBadge{display:block!important}
+}
+
 @media (max-width: 900px){
   body{overflow:auto}
   .header{padding:12px;gap:12px;align-items:flex-start}
@@ -110,6 +133,8 @@ svg{display:block;width:100%;height:auto;min-width:1400px;background:#fff;touch-
     <button id="traceBtn" title="Seçili hattı izle">Hattı İzle</button>
     <button id="clearTraceBtn" title="Vurguyu temizle">Temizle</button>
     <button id="resetBtn" title="Yerleşimi sıfırla">↺</button>
+    <button id="printLineBtn" title="Seçili hattı PDF olarak yazdır">Hat PDF</button>
+    <button id="printFullBtn" title="Tüm haritayı PDF olarak yazdır">Tam PDF</button>
   </div>
   <div class="legend">
     <span><span class="sw" style="background:#d12f2f"></span>Arf hattı</span><span><span class="sw" style="background:#2f6fdf"></span>Hilbert hattı</span><span><span class="sw" style="background:#178a4b"></span>Kolmogorov hattı</span><span><span class="sw" style="background:#7b43c8"></span>Peano hattı</span><span><span class="sw" style="background:#0f8a73"></span>Yeni Wilkes hattı</span><span><span class="sw" style="background:#ef9b32"></span>Brousseau hattı</span>
@@ -143,7 +168,8 @@ svg{display:block;width:100%;height:auto;min-width:1400px;background:#fff;touch-
   </div>
 </div>
 
-<div class="credit">Prof. Dr. Veysel Nezir ve Noura Nezir tarafından hazırlanmıştır.</div>
+<div class="credit">Prof. Dr. Veysel Nezir ve Noura Nezir tarafından hazırlanmıştır. Tüm hakları Kafkas Üniversitesine aittir.</div>
+<div id="printBadge" style="display:none"></div>
 
 <script>
 const nodes=[{"id": "n0", "name": "Abraham Gotthelf Kästner", "x": 1191.5, "y": 3134.16, "w": 156.0, "h": 36.0, "turkish": false}, {"id": "n1", "name": "Adam Sedgwick", "x": 2563.0, "y": 3674.16, "w": 99.0, "h": 36.0, "turkish": false}, {"id": "n2", "name": "Adem Yolcu", "x": 1863.5, "y": 4862.16, "w": 76.0, "h": 36.0, "turkish": true}, {"id": "n3", "name": "Adolf Fick", "x": 1922.5, "y": 3242.16, "w": 64.0, "h": 36.0, "turkish": false}, {"id": "n4", "name": "Aegidius Strauch", "x": 1623.0, "y": 2594.16, "w": 105.0, "h": 36.0, "turkish": false}, {"id": "n5", "name": "Ahmet Abdik", "x": 1647.5, "y": 4322.16, "w": 82.0, "h": 36.0, "turkish": true}, {"id": "n6", "name": "Ahmet Kaçar", "x": 1628.0, "y": 4538.16, "w": 83.0, "h": 36.0, "turkish": true}, {"id": "n7", "name": "Ahmet Küçük", "x": 1831.0, "y": 4538.16, "w": 85.0, "h": 36.0, "turkish": true}, {"id": "n8", "name": "Albert Einstein", "x": 1921.0, "y": 3566.16, "w": 93.0, "h": 36.0, "turkish": false}, {"id": "n9", "name": "Aleksandr Petrovich Norden", "x": 1923.0, "y": 3998.16, "w": 165.0, "h": 36.0, "turkish": false}, {"id": "n10", "name": "Aleksei Nikolaevich Krylov", "x": 1700.0, "y": 3782.16, "w": 157.0, "h": 36.0, "turkish": false}, {"id": "n11", "name": "Alexander Andreevitch Samarskii", "x": 1018.0, "y": 4430.16, "w": 195.0, "h": 36.0, "turkish": false}, {"id": "n12", "name": "Alexander Hegius", "x": 1913.0, "y": 2054.16, "w": 109.0, "h": 36.0, "turkish": false}, {"id": "n13", "name": "Alfred Kleiner", "x": 1924.0, "y": 3458.16, "w": 87.0, "h": 36.0, "turkish": false}, {"id": "n14", "name": "Ali Özdeş", "x": 2270.5, "y": 4538.16, "w": 64.0, "h": 36.0, "turkish": true}, {"id": "n15", "name": "Anatolii Gordeevich Kostyuchenko", "x": 772.5, "y": 4430.16, "w": 200.0, "h": 36.0, "turkish": false}, {"id": "n16", "name": "Andrei Andreyevich Markov", "x": 1902.5, "y": 3782.16, "w": 164.0, "h": 36.0, "turkish": false}, {"id": "n17", "name": "Andrei Nikolaevich Tikhonov", "x": 1041.5, "y": 4106.16, "w": 168.0, "h": 36.0, "turkish": false}, {"id": "n18", "name": "Andrei Nikolayevich Kolmogorov", "x": 806.5, "y": 4106.16, "w": 190.0, "h": 36.0, "turkish": false}, {"id": "n19", "name": "Angelo Genocchi", "x": 2075.5, "y": 3458.16, "w": 104.0, "h": 36.0, "turkish": false}, {"id": "n20", "name": "Anton Bernhard Lauterbach", "x": 1743.5, "y": 2702.16, "w": 164.0, "h": 36.0, "turkish": false}, {"id": "n21", "name": "Archimedes", "x": 1827.0, "y": 326.16, "w": 77.0, "h": 36.0, "turkish": false}, {"id": "n22", "name": "Arif A. Salimov", "x": 2023.5, "y": 4214.16, "w": 94.0, "h": 36.0, "turkish": false}, {"id": "n23", "name": "Arif Aligeidarovich Babaev", "x": 1721.0, "y": 3998.16, "w": 157.0, "h": 36.0, "turkish": false}, {"id": "n24", "name": "Asaf Iskenderov", "x": 1065.5, "y": 4538.16, "w": 100.0, "h": 36.0, "turkish": true}, {"id": "n25", "name": "Basilios Bessarion", "x": 1730.5, "y": 1622.16, "w": 112.0, "h": 36.0, "turkish": false}, {"id": "n26", "name": "Berki Yurtsever", "x": 1471.5, "y": 4214.16, "w": 96.0, "h": 36.0, "turkish": true}, {"id": "n27", "name": "Bernhard Friedrich Thibaut", "x": 1190.5, "y": 3242.16, "w": 158.0, "h": 36.0, "turkish": false}, {"id": "n28", "name": "Bertram A. F. Wehrfritz", "x": 72.0, "y": 4106.16, "w": 139.0, "h": 36.0, "turkish": false}, {"id": "n29", "name": "Binali Musaev", "x": 1781.0, "y": 4106.16, "w": 89.0, "h": 36.0, "turkish": false}, {"id": "n30", "name": "Boyd Henry Bode", "x": 240.0, "y": 4214.16, "w": 109.0, "h": 36.0, "turkish": false}, {"id": "n31", "name": "Bünyamin Yıldız", "x": 1581.5, "y": 4646.16, "w": 100.0, "h": 36.0, "turkish": true}, {"id": "n32", "name": "C. Felix Klein", "x": 1277.5, "y": 3674.16, "w": 84.0, "h": 36.0, "turkish": false}, {"id": "n33", "name": "C. L. Ferdinand Lindemann", "x": 1240.0, "y": 3782.16, "w": 159.0, "h": 36.0, "turkish": false}, {"id": "n34", "name": "C. Émile Picard", "x": 2420.0, "y": 3782.16, "w": 95.0, "h": 36.0, "turkish": false}, {"id": "n35", "name": "Carl Friedrich Gauss", "x": 1511.5, "y": 3350.16, "w": 122.0, "h": 36.0, "turkish": false}, {"id": "n36", "name": "Carl Gottfried Neumann", "x": 1413.0, "y": 3674.16, "w": 143.0, "h": 36.0, "turkish": false}, {"id": "n37", "name": "Carl Gustav Jacob Jacobi", "x": 1121.5, "y": 3458.16, "w": 146.0, "h": 36.0, "turkish": false}, {"id": "n38", "name": "Cem Tezer", "x": 554.5, "y": 4214.16, "w": 70.0, "h": 36.0, "turkish": true}, {"id": "n39", "name": "Cengiz Uluçay", "x": 260.0, "y": 4106.16, "w": 91.0, "h": 36.0, "turkish": true}, {"id": "n40", "name": "Charles Hermite", "x": 2272.5, "y": 3782.16, "w": 102.0, "h": 36.0, "turkish": false}, {"id": "n41", "name": "Christian August Hausen", "x": 1234.5, "y": 3026.16, "w": 148.0, "h": 36.0, "turkish": false}, {"id": "n42", "name": "Christian Heinrich Bünger", "x": 1825.0, "y": 3026.16, "w": 153.0, "h": 36.0, "turkish": false}, {"id": "n43", "name": "Christian Ludwig Gerling", "x": 1503.5, "y": 3458.16, "w": 146.0, "h": 36.0, "turkish": false}, {"id": "n44", "name": "Christoph Gudermann", "x": 441.0, "y": 3566.16, "w": 133.0, "h": 36.0, "turkish": false}, {"id": "n45", "name": "Christopher John Lennard", "x": 1228.0, "y": 4538.16, "w": 151.0, "h": 36.0, "turkish": false}, {"id": "n46", "name": "Cihan Orhan", "x": 1394.0, "y": 4430.16, "w": 81.0, "h": 36.0, "turkish": true}, {"id": "n47", "name": "Corrado Segre", "x": 2085.0, "y": 3674.16, "w": 91.0, "h": 36.0, "turkish": false}, {"id": "n48", "name": "Daniel Segal", "x": 83.0, "y": 4214.16, "w": 81.0, "h": 36.0, "turkish": false}, {"id": "n49", "name": "David Hilbert", "x": 1277.0, "y": 3890.16, "w": 85.0, "h": 36.0, "turkish": false}, {"id": "n50", "name": "Demetrios Kydones", "x": 1805.5, "y": 1406.16, "w": 120.0, "h": 36.0, "turkish": false}, {"id": "n51", "name": "Denise Spangler", "x": 273.5, "y": 4646.16, "w": 102.0, "h": 36.0, "turkish": false}, {"id": "n52", "name": "Desiderius Erasmus", "x": 1917.0, "y": 2162.16, "w": 121.0, "h": 36.0, "turkish": false}, {"id": "n53", "name": "Dmitri Fedorowitsch Egorov", "x": 850.0, "y": 3890.16, "w": 165.0, "h": 36.0, "turkish": false}, {"id": "n54", "name": "Domenico Maria Novara", "x": 1695.0, "y": 1838.16, "w": 145.0, "h": 36.0, "turkish": false}, {"id": "n55", "name": "Ebru Ersarı", "x": 1442.0, "y": 4754.16, "w": 73.0, "h": 36.0, "turkish": true}, {"id": "n56", "name": "Edward John Routh", "x": 2551.5, "y": 3890.16, "w": 116.0, "h": 36.0, "turkish": false}, {"id": "n57", "name": "El-Harezmi", "x": 1829.5, "y": 434.16, "w": 72.0, "h": 36.0, "turkish": false}, {"id": "n58", "name": "Elmar Thoma", "x": 570.0, "y": 3890.16, "w": 85.0, "h": 36.0, "turkish": false}, {"id": "n59", "name": "Enno Heeren Dirksen", "x": 1167.5, "y": 3350.16, "w": 128.0, "h": 36.0, "turkish": false}, {"id": "n60", "name": "Erasmus Schmidt", "x": 1685.5, "y": 2378.16, "w": 108.0, "h": 36.0, "turkish": false}, {"id": "n61", "name": "Erdal Karaduman", "x": 61.5, "y": 4538.16, "w": 106.0, "h": 36.0, "turkish": true}, {"id": "n62", "name": "Erhan Deniz", "x": 555.0, "y": 4538.16, "w": 79.0, "h": 36.0, "turkish": true}, {"id": "n63", "name": "Ernst Eduard Kummer", "x": 846.0, "y": 3674.16, "w": 133.0, "h": 36.0, "turkish": false}, {"id": "n64", "name": "Euclid", "x": 1838.5, "y": 218.16, "w": 54.0, "h": 36.0, "turkish": false}, {"id": "n65", "name": "Eugène Charles Catalan", "x": 2226.5, "y": 3674.16, "w": 144.0, "h": 36.0, "turkish": false}, {"id": "n66", "name": "Federigo Enriques", "x": 2127.0, "y": 3890.16, "w": 111.0, "h": 36.0, "turkish": false}, {"id": "n67", "name": "Ferdinand Georg Frobenius", "x": 190.5, "y": 3782.16, "w": 160.0, "h": 36.0, "turkish": false}, {"id": "n68", "name": "Franz Ludwig Fick", "x": 1884.5, "y": 3134.16, "w": 108.0, "h": 36.0, "turkish": false}, {"id": "n69", "name": "Friedrich Emil Prym", "x": 691.5, "y": 3782.16, "w": 118.0, "h": 36.0, "turkish": false}, {"id": "n70", "name": "Friedrich Julius Richelot", "x": 1263.0, "y": 3566.16, "w": 139.0, "h": 36.0, "turkish": false}, {"id": "n71", "name": "Friedrich Wilhelm Bessel", "x": 1312.5, "y": 3458.16, "w": 146.0, "h": 36.0, "turkish": false}, {"id": "n72", "name": "Gabil Yagub", "x": 1109.5, "y": 4646.16, "w": 76.0, "h": 36.0, "turkish": true}, {"id": "n73", "name": "Galileo Galilei", "x": 2568.5, "y": 2594.16, "w": 88.0, "h": 36.0, "turkish": false}, {"id": "n74", "name": "Gaston Darboux", "x": 2415.5, "y": 3674.16, "w": 102.0, "h": 36.0, "turkish": false}, {"id": "n75", "name": "Gemistus Pletho", "x": 1736.0, "y": 1514.16, "w": 103.0, "h": 36.0, "turkish": false}, {"id": "n76", "name": "Geoffrey Charles Smith", "x": 44.5, "y": 4322.16, "w": 140.0, "h": 36.0, "turkish": false}, {"id": "n77", "name": "Georg Erhard Hamberger", "x": 1750.0, "y": 2810.16, "w": 151.0, "h": 36.0, "turkish": false}, {"id": "n78", "name": "Georg Hamel", "x": 1431.0, "y": 3998.16, "w": 85.0, "h": 36.0, "turkish": false}, {"id": "n79", "name": "Georg Joachim von Leuchen Rheticus", "x": 1650.0, "y": 2054.16, "w": 217.0, "h": 36.0, "turkish": false}, {"id": "n80", "name": "Georg Rost", "x": 703.5, "y": 3890.16, "w": 74.0, "h": 36.0, "turkish": false}, {"id": "n81", "name": "Georgiy Evgenievich Shilov", "x": 798.5, "y": 4322.16, "w": 162.0, "h": 36.0, "turkish": false}, {"id": "n82", "name": "Giacomo Saban", "x": 2161.5, "y": 4106.16, "w": 98.0, "h": 36.0, "turkish": false}, {"id": "n83", "name": "Giovanni Plana", "x": 2077.5, "y": 3350.16, "w": 94.0, "h": 36.0, "turkish": false}, {"id": "n84", "name": "Giuseppe Peano", "x": 2079.5, "y": 3566.16, "w": 100.0, "h": 36.0, "turkish": false}, {"id": "n85", "name": "Gonca Canbek Çelikten", "x": 2002.0, "y": 4754.16, "w": 139.0, "h": 36.0, "turkish": true}, {"id": "n86", "name": "Gottfried Christoph Beireis", "x": 1814.0, "y": 2918.16, "w": 159.0, "h": 36.0, "turkish": false}, {"id": "n87", "name": "Gregory Choniades", "x": 1806.5, "y": 866.16, "w": 118.0, "h": 36.0, "turkish": false}, {"id": "n88", "name": "Gregory Palamas", "x": 1812.5, "y": 1190.16, "w": 106.0, "h": 36.0, "turkish": false}, {"id": "n89", "name": "Guarino da Verona", "x": 1897.0, "y": 1622.16, "w": 115.0, "h": 36.0, "turkish": false}, {"id": "n90", "name": "Guido Castelnuovo", "x": 2111.5, "y": 3782.16, "w": 116.0, "h": 36.0, "turkish": false}, {"id": "n91", "name": "Halit Orhan", "x": 435.5, "y": 4430.16, "w": 76.0, "h": 36.0, "turkish": true}, {"id": "n92", "name": "Harold Bernard Alberty", "x": 230.0, "y": 4322.16, "w": 139.0, "h": 36.0, "turkish": false}, {"id": "n94", "name": "Heinrich Ferdinand Scherk", "x": 975.5, "y": 3566.16, "w": 156.0, "h": 36.0, "turkish": false}, {"id": "n95", "name": "Heinrich Wilhelm Brandes", "x": 991.5, "y": 3242.16, "w": 154.0, "h": 36.0, "turkish": false}, {"id": "n96", "name": "Hermann Amandus Schwarz", "x": 424.0, "y": 3782.16, "w": 167.0, "h": 36.0, "turkish": false}, {"id": "n97", "name": "Hilmi Hacısalihoğlu", "x": 1365.0, "y": 4322.16, "w": 117.0, "h": 36.0, "turkish": true}, {"id": "n98", "name": "Hugo Dyonizy Steinhaus", "x": 1239.0, "y": 3998.16, "w": 147.0, "h": 36.0, "turkish": false}, {"id": "n99", "name": "Hüseyin Aydın", "x": 69.0, "y": 4430.16, "w": 91.0, "h": 36.0, "turkish": true}, {"id": "n100", "name": "Hüseyin Demir", "x": 396.5, "y": 4106.16, "w": 94.0, "h": 36.0, "turkish": true}, {"id": "n101", "name": "Isaac Barrow", "x": 2570.5, "y": 2810.16, "w": 84.0, "h": 36.0, "turkish": false}, {"id": "n102", "name": "Isaac Newton", "x": 2569.0, "y": 2918.16, "w": 87.0, "h": 36.0, "turkish": false}, {"id": "n103", "name": "Israel Moiseivich Gelfand", "x": 819.5, "y": 4214.16, "w": 150.0, "h": 36.0, "turkish": false}, {"id": "n104", "name": "Issai Schur", "x": 201.5, "y": 3890.16, "w": 72.0, "h": 36.0, "turkish": false}, {"id": "n105", "name": "Jacob Bernoulli", "x": 2016.5, "y": 2810.16, "w": 94.0, "h": 36.0, "turkish": false}, {"id": "n106", "name": "Jacques Salomon Hadamard", "x": 2281.5, "y": 3998.16, "w": 166.0, "h": 36.0, "turkish": false}, {"id": "n107", "name": "Jean Le Rond d’Alembert", "x": 2227.5, "y": 3242.16, "w": 148.0, "h": 36.0, "turkish": false}, {"id": "n108", "name": "Jean-André Ville", "x": 2306.0, "y": 4214.16, "w": 99.0, "h": 36.0, "turkish": false}, {"id": "n109", "name": "Johann Andreas Planer", "x": 1358.5, "y": 2918.16, "w": 136.0, "h": 36.0, "turkish": false}, {"id": "n110", "name": "Johann Andreas Segner", "x": 1598.5, "y": 2918.16, "w": 140.0, "h": 36.0, "turkish": false}, {"id": "n111", "name": "Johann Bernoulli", "x": 2050.0, "y": 2918.16, "w": 101.0, "h": 36.0, "turkish": false}, {"id": "n112", "name": "Johann Elert Bode", "x": 1540.5, "y": 3134.16, "w": 110.0, "h": 36.0, "turkish": false}, {"id": "n113", "name": "Johann Friedrich Pfaff", "x": 1522.5, "y": 3242.16, "w": 128.0, "h": 36.0, "turkish": false}, {"id": "n114", "name": "Johann Georg Büsch", "x": 1553.0, "y": 3026.16, "w": 123.0, "h": 36.0, "turkish": false}, {"id": "n115", "name": "Johann Jacob Grynaeus", "x": 2038.0, "y": 3026.16, "w": 139.0, "h": 36.0, "turkish": false}, {"id": "n116", "name": "Johann Jakob Müller", "x": 1907.5, "y": 3350.16, "w": 120.0, "h": 36.0, "turkish": false}, {"id": "n117", "name": "Johann Martin Christian Bartels", "x": 1678.5, "y": 3350.16, "w": 184.0, "h": 36.0, "turkish": false}, {"id": "n118", "name": "Johann Pasch", "x": 1453.0, "y": 2810.16, "w": 85.0, "h": 36.0, "turkish": false}, {"id": "n119", "name": "Johannes Müller Regiomontanus", "x": 1674.0, "y": 1730.16, "w": 189.0, "h": 36.0, "turkish": false}, {"id": "n120", "name": "John Crank", "x": 2501.0, "y": 4322.16, "w": 71.0, "h": 36.0, "turkish": false}, {"id": "n121", "name": "John William Strutt (Lord Rayleigh)", "x": 2502.5, "y": 3998.16, "w": 202.0, "h": 36.0, "turkish": false}, {"id": "n122", "name": "Joseph Diestel", "x": 1258.0, "y": 4430.16, "w": 91.0, "h": 36.0, "turkish": false}, {"id": "n123", "name": "Joseph John Thomson (J. J. Thomson)", "x": 2514.5, "y": 4106.16, "w": 130.0, "h": 36.0, "turkish": false}, {"id": "n124", "name": "Joseph Liouville", "x": 2250.0, "y": 3566.16, "w": 97.0, "h": 36.0, "turkish": false}, {"id": "n125", "name": "Joseph-Louis Lagrange", "x": 2046.5, "y": 3242.16, "w": 136.0, "h": 36.0, "turkish": false}, {"id": "n126", "name": "Jules Tannery", "x": 2284.0, "y": 3890.16, "w": 85.0, "h": 36.0, "turkish": false}, {"id": "n127", "name": "Julius Plücker", "x": 1491.0, "y": 3566.16, "w": 85.0, "h": 36.0, "turkish": false}, {"id": "n128", "name": "Kamal al-Din Ibn Yunus", "x": 1797.0, "y": 650.16, "w": 137.0, "h": 36.0, "turkish": false}, {"id": "n129", "name": "Karl Christian von Langsdorf", "x": 778.5, "y": 3242.16, "w": 168.0, "h": 36.0, "turkish": false}, {"id": "n130", "name": "Karl Theodor Wilhelm Weierstrass", "x": 408.0, "y": 3674.16, "w": 199.0, "h": 36.0, "turkish": false}, {"id": "n131", "name": "Kenneth B. Henderson", "x": 243.5, "y": 4430.16, "w": 136.0, "h": 36.0, "turkish": false}, {"id": "n132", "name": "Kerim Erim", "x": 688.0, "y": 4106.16, "w": 73.0, "h": 36.0, "turkish": true}, {"id": "n133", "name": "Kurt August Hirsch", "x": 107.0, "y": 3998.16, "w": 115.0, "h": 36.0, "turkish": false}, {"id": "n134", "name": "Leonhard Euler", "x": 2067.0, "y": 3134.16, "w": 95.0, "h": 36.0, "turkish": false}, {"id": "n135", "name": "Leopold Fejér", "x": 400.5, "y": 3890.16, "w": 86.0, "h": 36.0, "turkish": false}, {"id": "n136", "name": "Luigi Campedelli", "x": 2133.0, "y": 3998.16, "w": 103.0, "h": 36.0, "turkish": false}, {"id": "n137", "name": "Manuel Bryennios", "x": 1810.0, "y": 974.16, "w": 111.0, "h": 36.0, "turkish": false}, {"id": "n138", "name": "Manuel Chrysoloras", "x": 1884.0, "y": 1514.16, "w": 121.0, "h": 36.0, "turkish": false}, {"id": "n139", "name": "Martin Ohm", "x": 823.5, "y": 3458.16, "w": 78.0, "h": 36.0, "turkish": false}, {"id": "n140", "name": "Maurice Fréchet", "x": 2309.5, "y": 4106.16, "w": 100.0, "h": 36.0, "turkish": false}, {"id": "n141", "name": "Mehmet Emin Bozhüyük", "x": 1591.0, "y": 4106.16, "w": 145.0, "h": 36.0, "turkish": true}, {"id": "n142", "name": "Mehmet Çağlıyan", "x": 1656.0, "y": 4430.16, "w": 109.0, "h": 36.0, "turkish": true}, {"id": "n144", "name": "Michael d.J. Walther", "x": 1529.5, "y": 2702.16, "w": 122.0, "h": 36.0, "turkish": false}, {"id": "n145", "name": "Michel Chasles", "x": 2405.5, "y": 3566.16, "w": 94.0, "h": 36.0, "turkish": false}, {"id": "n146", "name": "Moritz Valentin Steinmetz", "x": 1678.5, "y": 2162.16, "w": 154.0, "h": 36.0, "turkish": false}, {"id": "n147", "name": "Muhammed Kamali", "x": 414.5, "y": 4322.16, "w": 118.0, "h": 36.0, "turkish": true}, {"id": "n148", "name": "Murat Çağlar", "x": 425.5, "y": 4646.16, "w": 84.0, "h": 36.0, "turkish": true}, {"id": "n149", "name": "Mustafa Bayraktar", "x": 394.0, "y": 4214.16, "w": 115.0, "h": 36.0, "turkish": true}, {"id": "n150", "name": "Mustafa Çiçek", "x": 1520.5, "y": 4430.16, "w": 90.0, "h": 36.0, "turkish": true}, {"id": "n151", "name": "Nasir al-Din al-Tusi", "x": 1808.5, "y": 758.16, "w": 114.0, "h": 36.0, "turkish": false}, {"id": "n152", "name": "Nesligül Aksan", "x": 2209.0, "y": 4646.16, "w": 93.0, "h": 36.0, "turkish": true}, {"id": "n153", "name": "Niccolò Tartaglia", "x": 2561.0, "y": 2378.16, "w": 103.0, "h": 36.0, "turkish": false}, {"id": "n154", "name": "Nicolai Vasilievich Bugaev", "x": 854.5, "y": 3782.16, "w": 156.0, "h": 36.0, "turkish": false}, {"id": "n155", "name": "Nicolaus Copernicus", "x": 1702.5, "y": 1946.16, "w": 124.0, "h": 36.0, "turkish": false}, {"id": "n156", "name": "Nicolaus Zapf", "x": 1674.5, "y": 2486.16, "w": 88.0, "h": 36.0, "turkish": false}, {"id": "n157", "name": "Nigar Yıldırım Aksoy", "x": 1560.0, "y": 4754.16, "w": 123.0, "h": 36.0, "turkish": true}, {"id": "n158", "name": "Nikolai Dmitrievich Brashman", "x": 1698.0, "y": 3566.16, "w": 175.0, "h": 36.0, "turkish": false}, {"id": "n159", "name": "Nikolai Ivanovich Lobachevsky", "x": 1695.0, "y": 3458.16, "w": 181.0, "h": 36.0, "turkish": false}, {"id": "n160", "name": "Nikolai Nikolayevich Luzin", "x": 815.0, "y": 3998.16, "w": 155.0, "h": 36.0, "turkish": false}, {"id": "n161", "name": "Nilos Kabasilas", "x": 1818.0, "y": 1298.16, "w": 95.0, "h": 36.0, "turkish": false}, {"id": "n162", "name": "Nizami Mustafa", "x": 1880.5, "y": 4214.16, "w": 98.0, "h": 36.0, "turkish": true}, {"id": "n163", "name": "Okay Çelebi", "x": 2171.0, "y": 4322.16, "w": 79.0, "h": 36.0, "turkish": true}, {"id": "n164", "name": "Ostilio Ricci", "x": 2574.0, "y": 2486.16, "w": 77.0, "h": 36.0, "turkish": false}, {"id": "n165", "name": "Otto Haupt", "x": 687.5, "y": 3998.16, "w": 74.0, "h": 36.0, "turkish": false}, {"id": "n166", "name": "Otto Szász", "x": 279.0, "y": 3998.16, "w": 73.0, "h": 36.0, "turkish": false}, {"id": "n167", "name": "Pafnuty Lvovich Chebyshev", "x": 1703.5, "y": 3674.16, "w": 164.0, "h": 36.0, "turkish": false}, {"id": "n168", "name": "Paul Erdős", "x": 408.5, "y": 3998.16, "w": 70.0, "h": 36.0, "turkish": false}, {"id": "n169", "name": "Pavel Sergeevich Aleksandrov", "x": 1015.5, "y": 3998.16, "w": 178.0, "h": 36.0, "turkish": false}, {"id": "n170", "name": "Peter Werenfels", "x": 1987.5, "y": 2702.16, "w": 100.0, "h": 36.0, "turkish": false}, {"id": "n171", "name": "Pierre-Simon Laplace", "x": 2237.5, "y": 3350.16, "w": 128.0, "h": 36.0, "turkish": false}, {"id": "n172", "name": "Pythagoras", "x": 1828.0, "y": 110.16, "w": 75.0, "h": 36.0, "turkish": false}, {"id": "n173", "name": "Rabia Çakan Akpınar", "x": 1999.5, "y": 4322.16, "w": 126.0, "h": 36.0, "turkish": true}, {"id": "n175", "name": "Ralph Hartzler Fox", "x": 1561.0, "y": 3998.16, "w": 115.0, "h": 36.0, "turkish": false}, {"id": "n176", "name": "Richard Edler von Mises", "x": 1401.0, "y": 4106.16, "w": 145.0, "h": 36.0, "turkish": false}, {"id": "n177", "name": "Robert Smith", "x": 2570.0, "y": 3134.16, "w": 85.0, "h": 36.0, "turkish": false}, {"id": "n178", "name": "Roger Cotes", "x": 2572.5, "y": 3026.16, "w": 80.0, "h": 36.0, "turkish": false}, {"id": "n179", "name": "Rudolf Agricola", "x": 1919.0, "y": 1946.16, "w": 95.0, "h": 36.0, "turkish": false}, {"id": "n180", "name": "Rudolf Lipschitz", "x": 828.0, "y": 3566.16, "w": 99.0, "h": 36.0, "turkish": false}, {"id": "n181", "name": "Saffet Süray", "x": 2170.5, "y": 4214.16, "w": 80.0, "h": 36.0, "turkish": true}, {"id": "n182", "name": "Sebastian Beck", "x": 1968.0, "y": 2486.16, "w": 97.0, "h": 36.0, "turkish": false}, {"id": "n183", "name": "Sercan Kazımoğlu", "x": 679.5, "y": 4646.16, "w": 110.0, "h": 36.0, "turkish": true}, {"id": "n184", "name": "Sethus Calvisius", "x": 1699.0, "y": 2270.16, "w": 103.0, "h": 36.0, "turkish": false}, {"id": "n186", "name": "Sharaf al-Din al-Tusi", "x": 1805.0, "y": 542.16, "w": 121.0, "h": 36.0, "turkish": false}, {"id": "n187", "name": "Simon Sulzer", "x": 1974.5, "y": 2378.16, "w": 84.0, "h": 36.0, "turkish": false}, {"id": "n188", "name": "Siméon Denis Poisson", "x": 2235.0, "y": 3458.16, "w": 133.0, "h": 36.0, "turkish": false}, {"id": "n189", "name": "Solomon Lefschetz", "x": 1535.5, "y": 3890.16, "w": 116.0, "h": 36.0, "turkish": false}, {"id": "n190", "name": "Stanisław Mazur", "x": 1219.0, "y": 4214.16, "w": 103.0, "h": 36.0, "turkish": false}, {"id": "n191", "name": "Stefan Banach", "x": 1259.5, "y": 4106.16, "w": 92.0, "h": 36.0, "turkish": false}, {"id": "n192", "name": "Stephen Whisson", "x": 2558.5, "y": 3350.16, "w": 108.0, "h": 36.0, "turkish": false}, {"id": "n193", "name": "Taha Yasin Öztürk", "x": 1846.5, "y": 4754.16, "w": 110.0, "h": 36.0, "turkish": true}, {"id": "n194", "name": "Thales", "x": 1838.5, "y": 2.16, "w": 54.0, "h": 36.0, "turkish": false}, {"id": "n195", "name": "Theodor Zwinger Jr.", "x": 1957.5, "y": 2594.16, "w": 120.0, "h": 36.0, "turkish": false}, {"id": "n196", "name": "Theodore Metochites", "x": 1801.0, "y": 1082.16, "w": 129.0, "h": 36.0, "turkish": false}, {"id": "n197", "name": "Theodoros Gazes", "x": 1911.5, "y": 1838.16, "w": 108.0, "h": 36.0, "turkish": false}, {"id": "n198", "name": "Thomas J. Cooney", "x": 259.5, "y": 4538.16, "w": 112.0, "h": 36.0, "turkish": false}, {"id": "n199", "name": "Thomas Jones", "x": 2568.0, "y": 3566.16, "w": 89.0, "h": 36.0, "turkish": false}, {"id": "n200", "name": "Thomas Postlethwaite", "x": 2545.5, "y": 3458.16, "w": 134.0, "h": 36.0, "turkish": false}, {"id": "n201", "name": "Turgut Öziş", "x": 2480.0, "y": 4430.16, "w": 75.0, "h": 36.0, "turkish": true}, {"id": "n202", "name": "Veniamin Fedorovich Kagan", "x": 1916.5, "y": 3890.16, "w": 164.0, "h": 36.0, "turkish": false}, {"id": "n203", "name": "Veysel Nezir", "x": 1263.0, "y": 4646.16, "w": 81.0, "h": 36.0, "turkish": true}, {"id": "n204", "name": "Victor Dmitrievich Kupradze", "x": 1702.5, "y": 3890.16, "w": 166.0, "h": 36.0, "turkish": false}, {"id": "n205", "name": "Victor Michael Bogdan", "x": 1183.5, "y": 4322.16, "w": 136.0, "h": 36.0, "turkish": false}, {"id": "n206", "name": "Vincenzo Viviani", "x": 2561.0, "y": 2702.16, "w": 103.0, "h": 36.0, "turkish": false}, {"id": "n207", "name": "Vittorino da Feltre", "x": 1909.5, "y": 1730.16, "w": 112.0, "h": 36.0, "turkish": false}, {"id": "n208", "name": "Vladimir Vladimirovich Vishnevskii", "x": 1915.0, "y": 4106.16, "w": 201.0, "h": 36.0, "turkish": false}, {"id": "n209", "name": "Walter Taylor", "x": 2570.0, "y": 3242.16, "w": 85.0, "h": 36.0, "turkish": false}, {"id": "n210", "name": "William Edward Story", "x": 1484.5, "y": 3782.16, "w": 130.0, "h": 36.0, "turkish": false}, {"id": "n211", "name": "William Hopkins", "x": 2561.5, "y": 3782.16, "w": 100.0, "h": 36.0, "turkish": false}, {"id": "n212", "name": "William Lawrence Bragg", "x": 2487.0, "y": 4214.16, "w": 145.0, "h": 36.0, "turkish": false}, {"id": "n213", "name": "Wolfgang Fabricius Capito", "x": 1919.5, "y": 2270.16, "w": 154.0, "h": 36.0, "turkish": false}, {"id": "n214", "name": "Wolfgang Krieger", "x": 536.0, "y": 4106.16, "w": 107.0, "h": 36.0, "turkish": false}, {"id": "n215", "name": "Yeşim Aküzüm Özen", "x": 126.5, "y": 4754.16, "w": 124.0, "h": 36.0, "turkish": true}, {"id": "n216", "name": "Yücel Özkan", "x": 555.0, "y": 4646.16, "w": 79.0, "h": 36.0, "turkish": true}, {"id": "n217", "name": "Ömür Deveci", "x": 72.0, "y": 4646.16, "w": 85.0, "h": 36.0, "turkish": true}, {"id": "n218", "name": "Öner Çakar", "x": 1527.0, "y": 4322.16, "w": 75.0, "h": 36.0, "turkish": true}, {"id": "n219", "name": "Özgür Erdağ", "x": 0.0, "y": 4754.16, "w": 81.0, "h": 36.0, "turkish": true}, {"id": "n221", "name": "Shams al-Din al-Bukhari", "x": 1784.0, "y": 812.16, "w": 164.0, "h": 36.0, "turkish": false}, {"id": "n222", "name": "Sadi Bayramov", "x": 1785.0, "y": 4682.16, "w": 110.0, "h": 36.0, "turkish": true}, {"id": "n223", "name": "Akif Hacıyev", "x": 1781.0, "y": 4574.16, "w": 118.0, "h": 36.0, "turkish": true}, {"id": "n224", "name": "İbrahim İbrahimov", "x": 1769.0, "y": 4466.16, "w": 142.0, "h": 36.0, "turkish": true}, {"id": "n225", "name": "Aleksandr Gelfond", "x": 1773.0, "y": 4358.16, "w": 134.0, "h": 36.0, "turkish": false}, {"id": "n226", "name": "Alexander Khinchin", "x": 1770.0, "y": 4250.16, "w": 140.0, "h": 36.0, "turkish": false}, {"id": "n227", "name": "Sir Maurice Wilkes", "x": 3320.0, "y": 4260.0, "w": 139.6, "h": 36.0, "turkish": false}, {"id": "n228", "name": "Arthur Norman", "x": 3320.0, "y": 4470.0, "w": 103.6, "h": 36.0, "turkish": false}, {"id": "n229", "name": "James Davenport", "x": 3320.0, "y": 4680.0, "w": 118.0, "h": 36.0, "turkish": false}, {"id": "n230", "name": "Mustafa Bayram", "x": 3320.0, "y": 4890.0, "w": 110.8, "h": 36.0, "turkish": true}, {"id": "n231", "name": "Ercan Çelik", "x": 3320.0, "y": 5100.0, "w": 89.2, "h": 36.0, "turkish": true}, {"id": "n232", "name": "Hatıra Günerhan", "x": 3320.0, "y": 5310.0, "w": 118.0, "h": 36.0, "turkish": true}, {"id": "n233", "name": "Kurt Hensel", "x": 3020.0, "y": 3810.0, "w": 89.2, "h": 36.0, "turkish": false}, {"id": "n234", "name": "Helmut Hasse", "x": 3020.0, "y": 4020.0, "w": 96.4, "h": 36.0, "turkish": false}, {"id": "n235", "name": "Cahit Arf", "x": 3020.0, "y": 4230.0, "w": 74.8, "h": 36.0, "turkish": true}, {"id": "n236", "name": "Sadi Ebusuudoğlu", "x": 3020.0, "y": 4440.0, "w": 125.2, "h": 36.0, "turkish": true}, {"id": "n237", "name": "Bilal Aydın", "x": 3020.0, "y": 4650.0, "w": 89.2, "h": 36.0, "turkish": true}, {"id": "n238", "name": "Tevfik İşleyen", "x": 3020.0, "y": 4860.0, "w": 110.8, "h": 36.0, "turkish": true}, {"id": "n239", "name": "Ruhşen Aldemir Engin", "x": 3020.0, "y": 5070.0, "w": 154.0, "h": 36.0, "turkish": true}, {"id": "n240", "name": "Jean Piaget", "x": 3920.0, "y": 3600.0, "w": 89.2, "h": 36.0, "turkish": false}, {"id": "n241", "name": "Seymour Papert", "x": 3920.0, "y": 3810.0, "w": 110.8, "h": 36.0, "turkish": false}, {"id": "n242", "name": "Richard Noss", "x": 3920.0, "y": 4020.0, "w": 96.4, "h": 36.0, "turkish": false}, {"id": "n243", "name": "Adnan Baki", "x": 3920, "y": 4230.0, "w": 82.0, "h": 36.0, "turkish": true}, {"id": "n244", "name": "Derya Çelik", "x": 3740, "y": 4470.0, "w": 89.2, "h": 36.0, "turkish": true}, {"id": "n245", "name": "Tuba Gökçek", "x": 4100, "y": 4470.0, "w": 96, "h": 36.0, "turkish": true}, {"id": "n246", "name": "Ebru Saka", "x": 3740, "y": 4710.0, "w": 74.8, "h": 36.0, "turkish": true}, {"id": "n247", "name": "Hilal Yıldız", "x": 4100, "y": 4710.0, "w": 96.4, "h": 36.0, "turkish": true}, {"id": "n248", "name": "Nurullah Ankaralıoğlu", "x": 300.0, "y": 4650.0, "w": 161.2, "h": 36.0, "turkish": true}, {"id": "n249", "name": "Kübra Gül", "x": 300.0, "y": 4860.0, "w": 74.8, "h": 36.0, "turkish": true}, {"id": "n250", "name": "Émile Borel", "x": 3620, "y": 3600.0, "w": 89.2, "h": 36.0, "turkish": false}, {"id": "n251", "name": "Paul Montel", "x": 3620, "y": 3810.0, "w": 89.2, "h": 36.0, "turkish": false}, {"id": "n252", "name": "Henri Cartan", "x": 3620, "y": 4020.0, "w": 96.4, "h": 36.0, "turkish": false}, {"id": "n253", "name": "Jean Colmez", "x": 3620, "y": 4230.0, "w": 89.2, "h": 36.0, "turkish": false}, {"id": "n254", "name": "Guy Brousseau", "x": 3620, "y": 4440.0, "w": 103.6, "h": 36.0, "turkish": false}, {"id": "n255", "name": "Nicolas Balacheff", "x": 3620, "y": 4650.0, "w": 132.4, "h": 36.0, "turkish": false}, {"id": "n256", "name": "Selahattin Arslan", "x": 3620, "y": 4860.0, "w": 132.4, "h": 36.0, "turkish": true}, {"id": "n257", "name": "Serkan Coştu", "x": 3620, "y": 5070.0, "w": 96.4, "h": 36.0, "turkish": true}, {"id": "n258", "name": "Rahim Ocak", "x": 620.0, "y": 4340.0, "w": 82.0, "h": 36.0, "turkish": true}, {"id": "n259", "name": "Seyfullah Hızarcı", "x": 620.0, "y": 4550.0, "w": 132.4, "h": 36.0, "turkish": true}, {"id": "n260", "name": "Şükrü İlgün", "x": 620.0, "y": 4760.0, "w": 89.2, "h": 36.0, "turkish": true}];
@@ -152,14 +178,44 @@ const unixLinks={"Şükrü İlgün": "https://unis.kafkas.edu.tr/akademisyen-det
 const wikiDirectTR={"Thales": "https://tr.wikipedia.org/wiki/Thales", "Pythagoras": "https://tr.wikipedia.org/wiki/Pisagor", "Euclid": "https://tr.wikipedia.org/wiki/%C3%96klid", "Archimedes": "https://tr.wikipedia.org/wiki/Ar%C5%9Fimet", "El-Harezmi": "https://tr.wikipedia.org/wiki/Harezm%C3%AE", "Nasir al-Din al-Tusi": "https://tr.wikipedia.org/wiki/N%C3%A2s%C4%B1r%C3%BCddin_T%C3%BBs%C3%AE", "Sharaf al-Din al-Tusi": "https://tr.wikipedia.org/wiki/%C5%9Eeref%C3%BCddin_et-T%C3%BBs%C3%AE", "Cahit Arf": "https://tr.wikipedia.org/wiki/Cahit_Arf", "Kerim Erim": "https://tr.wikipedia.org/wiki/Kerim_Erim", "Jean Piaget": "https://tr.wikipedia.org/wiki/Jean_Piaget", "Seymour Papert": "https://tr.wikipedia.org/wiki/Seymour_Papert", "David Hilbert": "https://tr.wikipedia.org/wiki/David_Hilbert", "Karl Theodor Wilhelm Weierstrass": "https://tr.wikipedia.org/wiki/Karl_Weierstrass", "Andrei Nikolayevich Kolmogorov": "https://tr.wikipedia.org/wiki/Andrey_Kolmogorov", "Giuseppe Peano": "https://tr.wikipedia.org/wiki/Giuseppe_Peano"};
 const wikiDirectEN={"Thales": "https://en.wikipedia.org/wiki/Thales", "Pythagoras": "https://en.wikipedia.org/wiki/Pythagoras", "Euclid": "https://en.wikipedia.org/wiki/Euclid", "Archimedes": "https://en.wikipedia.org/wiki/Archimedes", "El-Harezmi": "https://en.wikipedia.org/wiki/Al-Khwarizmi", "Nasir al-Din al-Tusi": "https://en.wikipedia.org/wiki/Nasir_al-Din_al-Tusi", "Sharaf al-Din al-Tusi": "https://en.wikipedia.org/wiki/Sharaf_al-Din_al-Tusi", "Cahit Arf": "https://en.wikipedia.org/wiki/Cahit_Arf", "Jean Piaget": "https://en.wikipedia.org/wiki/Jean_Piaget", "Seymour Papert": "https://en.wikipedia.org/wiki/Seymour_Papert", "David Hilbert": "https://en.wikipedia.org/wiki/David_Hilbert", "Karl Theodor Wilhelm Weierstrass": "https://en.wikipedia.org/wiki/Karl_Weierstrass", "Andrei Nikolayevich Kolmogorov": "https://en.wikipedia.org/wiki/Andrey_Kolmogorov", "Giuseppe Peano": "https://en.wikipedia.org/wiki/Giuseppe_Peano"};
 
-// Sağ üstte üst üste gelen kırmızı dikey hattı ayırmak için Thomson/Wilkes zinciri hafif sağa taşınır.
+// Çakışan kutuları ayırmak için bazı zincirler yatay ve düşey olarak dengelenir.
 (function(){
   const thomsonIds=new Set(['n1','n211','n56','n121','n123','n212','n120','n201','n14']);
-  const wilkesIds=new Set(['n227','n228','n229','n230','n231','n232']);
+  const wilkesIds=new Set(['n227','n228','n229']);
+  const hatiraTailIds=new Set(['n230','n231','n232']);
   nodes.forEach(n=>{
     if(thomsonIds.has(n.id)) n.x += 210;
-    if(wilkesIds.has(n.id)) n.x += 320;
+    if(wilkesIds.has(n.id)) n.x += 250;
+    if(hatiraTailIds.has(n.id)) n.x += 110;
   });
+
+  const byName = Object.fromEntries(nodes.map(n=>[n.name,n]));
+
+  // Hatıra hattı Serkan hattına çok yaklaşıyordu; zinciri sola taşı.
+  ['Mustafa Bayram','Ercan Çelik','Hatıra Günerhan'].forEach(name=>{
+    if(byName[name]) byName[name].x -= 220;
+  });
+
+  // Wilkes ve Brousseau kollarını birbirinden ayır.
+  if(byName['Jean Colmez']){ byName['Jean Colmez'].x += 120; byName['Jean Colmez'].y -= 40; }
+  if(byName['Guy Brousseau']){ byName['Guy Brousseau'].x += 120; byName['Guy Brousseau'].y += 10; }
+  if(byName['Nicolas Balacheff']){ byName['Nicolas Balacheff'].x += 120; byName['Nicolas Balacheff'].y += 20; }
+  if(byName['Selahattin Arslan']){ byName['Selahattin Arslan'].x += 90; }
+  if(byName['Serkan Coştu']){ byName['Serkan Coştu'].x += 80; }
+
+  // Brousseau - Derya - Ebru bölgesindeki üst üste binmeleri gider.
+  if(byName['Derya Çelik']){ byName['Derya Çelik'].x += 180; }
+  if(byName['Ebru Saka']){ byName['Ebru Saka'].x += 180; byName['Ebru Saka'].y += 10; }
+
+  // Erhan - Seyfullah bölgesini ayır.
+  if(byName['Seyfullah Hızarcı']){ byName['Seyfullah Hızarcı'].x += 180; }
+  if(byName['Şükrü İlgün']){ byName['Şükrü İlgün'].x += 180; }
+
+  // Denise - Nurullah - Murat - Yücel bölgesindeki kutu çakışmalarını gider.
+  if(byName['Nurullah Ankaralıoğlu']){ byName['Nurullah Ankaralıoğlu'].x += 30; byName['Nurullah Ankaralıoğlu'].y += 70; }
+  if(byName['Kübra Gül']){ byName['Kübra Gül'].x += 30; byName['Kübra Gül'].y += 90; }
+  if(byName['Murat Çağlar']){ byName['Murat Çağlar'].x += 95; }
+  if(byName['Yücel Özkan']){ byName['Yücel Özkan'].x += 120; byName['Yücel Özkan'].y += 70; }
 })();
 
 const lineageColors={"arf": "#d12f2f", "hilbert": "#2f6fdf", "kolmogorov": "#178a4b", "peano": "#7b43c8", "thomson": "#0f8a73", "wilkes": "#0f8a73", "papert": "#6e5ae0", "brousseau": "#ef9b32", "sukru": "#c03fd9", "kubra": "#0b8a43", "ancient": "#274f8a", "borel": "#ef9b32", "neutral": "#667085"};
@@ -195,7 +251,7 @@ edges.forEach((e,i)=>{
   (incident[e.target]??=[]).push(e);
 });
 let currentScale=1, panX=0, panY=0, currentSelectedId=null;
-const layoutStorageKey='kau_soyagaci_layout_v6';
+const layoutStorageKey='kau_soyagaci_layout_v10';
 
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]||m));}
 function createEl(tag,attrs={},text=''){const el=document.createElementNS('http://www.w3.org/2000/svg',tag); for(const[k,v] of Object.entries(attrs)) el.setAttribute(k,v); if(text) el.textContent=text; return el;}
@@ -409,6 +465,31 @@ async function wikiResolveTitle(title,lang){
 async function wikiSummary(title,lang){
   try{return await fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title.replace(/ /g,'_'))}`).then(r=>r.ok?r.json():null);}catch(e){return null;}
 }
+async function wikiExtractLong(title,lang){
+  try{
+    const url=`https://${lang}.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=plain&titles=${encodeURIComponent(title)}&format=json&origin=*`;
+    const data=await fetch(url).then(r=>r.ok?r.json():null);
+    const pages=data?.query?.pages||{};
+    const first=Object.values(pages)[0];
+    return first?.extract||'';
+  }catch(e){ return ''; }
+}
+function plainExtractToHtml(txt){
+  if(!txt) return '';
+  const cleaned=txt.replace(/
+/g,'').split('
+').map(s=>s.trim()).filter(Boolean);
+  const parts=[];
+  for(const line of cleaned){
+    if(/^={2,}.+={2,}$/.test(line)){
+      parts.push(`<h3>${esc(line.replace(/^=+|=+$/g,'').trim())}</h3>`);
+    }else{
+      parts.push(`<p>${esc(line)}</p>`);
+    }
+    if(parts.length>=24) break;
+  }
+  return parts.join('');
+}
 async function wikiParseHtml(title,lang){
   try{
     const url=`https://${lang}.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(title)}&prop=text|displaytitle&format=json&origin=*`;
@@ -445,17 +526,25 @@ async function wikiLookupExact(name,lang){
 }
 async function buildWikiDoc(name,lang){
   let title=await wikiLookupExact(name,lang);
-  if(!title) return {ok:false, html:frameDoc(name,`<p>${lang==='tr'?'Türkçe':'İngilizce'} Wikipedia sayfası bulunamadı veya yüklenemedi.</p>`)};
+  if(!title) return {ok:false, html:frameDoc(name,`<p>${lang==='tr'?'Türkçe':'İngilizce'} Wikipedia sayfası bulunamadı veya yüklenemedi.</p>`) };
   title=await wikiResolveTitle(title,lang);
-  const [sum,parsed]=await Promise.all([wikiSummary(title,lang), wikiParseHtml(title,lang)]);
+  const [sum,parsed,longExtract]=await Promise.all([wikiSummary(title,lang), wikiParseHtml(title,lang), wikiExtractLong(title,lang)]);
   let body='';
   if(sum && sum.extract){
     const img=sum.thumbnail?.source?`<img src="${sum.thumbnail.source}" alt="">`:'';
-    const desc=[sum.description,sum.extract].filter(Boolean).join('<br><br>');
     body += `${img}<p><strong>${esc(sum.title||title)}</strong>${sum.description?`<br><em>${esc(sum.description)}</em>`:''}<br><br>${esc(sum.extract)}</p>`;
   }
-  if(parsed?.text?.['*']) body += sanitizeWikiHtml(parsed.text['*'],lang);
-  if(!body.trim()) return {ok:false, html:frameDoc(name,`<p>${lang==='tr'?'Türkçe':'İngilizce'} Wikipedia sayfası bulunamadı veya yüklenemedi.</p>`)};
+  const parsedBody = parsed?.text?.['*'] ? sanitizeWikiHtml(parsed.text['*'],lang) : '';
+  const extractBody = plainExtractToHtml(longExtract);
+  if(parsedBody){
+    body += parsedBody;
+  }else if(extractBody){
+    body += extractBody;
+  }
+  if(extractBody && parsedBody && !parsedBody.includes('<h3>')){
+    body += `<hr style="border:none;border-top:1px solid #d7e2f1;margin:16px 0">${extractBody}`;
+  }
+  if(!body.trim()) return {ok:false, html:frameDoc(name,`<p>${lang==='tr'?'Türkçe':'İngilizce'} Wikipedia sayfası için ayrıntılı içerik alınamadı.</p>`) };
   body += `<p style="margin-top:14px"><a href="https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g,'_'))}">Wikipedia'da aç</a></p>`;
   return {ok:true, html:frameDoc(title,body)};
 }
@@ -557,6 +646,42 @@ document.getElementById('traceBtn').addEventListener('click',()=>traceLineage(cu
 document.getElementById('clearTraceBtn').addEventListener('click',clearTrace);
 document.getElementById('resetBtn').addEventListener('click',()=>{ localStorage.removeItem(layoutStorageKey); fitInitialView(); });
 
+function startPrint(mode){
+  const badge=document.getElementById('printBadge');
+  body.classList.add('print-mode');
+  body.classList.toggle('print-lineage', mode==='lineage');
+  badge.textContent = mode==='lineage' ? 'Seçili akademik hat - PDF çıktısı' : 'Matematik soyağacı - tam harita PDF çıktısı';
+}
+function endPrint(){
+  body.classList.remove('print-mode','print-lineage');
+}
+window.addEventListener('afterprint', endPrint);
+document.getElementById('printFullBtn').addEventListener('click',()=>{
+  clearTrace();
+  startPrint('full');
+  setTimeout(()=>window.print(), 120);
+});
+document.getElementById('printLineBtn').addEventListener('click',()=>{
+  if(!currentSelectedId){
+    alert('Önce bir matematikçi seçin, sonra hat PDF çıktısı alın.');
+    return;
+  }
+  traceLineage(currentSelectedId);
+  startPrint('lineage');
+  setTimeout(()=>window.print(), 120);
+});
+async function openPersonFromUrl(){
+  const params=new URLSearchParams(window.location.search);
+  const wanted=params.get('person');
+  if(!wanted) return;
+  const normalized=wanted.toLocaleLowerCase('tr');
+  const node=nodes.find(n=>n.name.toLocaleLowerCase('tr')===normalized);
+  if(node){
+    blinkAndFocus(node);
+    await openPanel(node);
+  }
+}
+
 const saved=localStorage.getItem(layoutStorageKey);
 if(saved){ try{ JSON.parse(saved).forEach(([id,x,y])=>{ if(byId[id]){ byId[id].x=x; byId[id].y=y; } }); }catch(e){} }
 render();
@@ -564,6 +689,7 @@ queueInitialFit();
 window.addEventListener('load', queueInitialFit);
 window.addEventListener('pageshow', queueInitialFit);
 window.addEventListener('resize',()=>{ if(!backdrop.classList.contains('open')) queueInitialFit(); });
+openPersonFromUrl();
 </script>
 </body>
 </html>
