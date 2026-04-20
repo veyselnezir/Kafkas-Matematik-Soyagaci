@@ -288,14 +288,15 @@ function fitInitialView(){
   const card=svg.closest('.card');
   const W=card?card.clientWidth:(svg.clientWidth||1200);
   const isMobile=window.innerWidth<=900;
-  currentScale=isMobile?0.84:0.70;
-  const topPad=isMobile?18:26;
-  const rightNudgePx=isMobile?18:0;
   const thales=nodes.find(n=>n.name==='Thales')||nodes[0];
+  const targetScale=isMobile?1.12:0.86;
+  const targetCenterX=isMobile?(W*0.64):(W*0.56);
+  const targetTopY=isMobile?54:42;
   const thalesCx=thales.x + thales.w/2;
-  const thalesCy=thales.y + thales.h/2;
-  panX=(W*0.5/currentScale)-thalesCx + (rightNudgePx/currentScale);
-  panY=(topPad/currentScale)-thalesCy;
+  const thalesTop=thales.y;
+  currentScale=targetScale;
+  panX=(targetCenterX/currentScale)-thalesCx;
+  panY=(targetTopY/currentScale)-thalesTop;
   applyView();
 }
 function queueInitialFit(){
@@ -304,6 +305,8 @@ function queueInitialFit(){
   setTimeout(fitInitialView, 80);
   setTimeout(fitInitialView, 240);
   setTimeout(fitInitialView, 700);
+  setTimeout(fitInitialView, 1400);
+  setTimeout(fitInitialView, 2200);
 }
 function blinkAndFocus(n){
   document.querySelectorAll('.node-group').forEach(g=>g.classList.remove('searchhit','blink'));
@@ -371,13 +374,62 @@ a{color:#2f5aa8;text-decoration:none}
 function sanitizeWikiHtml(raw,lang){
   const parser=new DOMParser();
   const doc=parser.parseFromString(raw,'text/html');
-  doc.querySelectorAll('style,script,.mw-editsection,.reference,.reflist,.navbox,.metadata,.toc,.shortdescription,.hatnote,.sidebar,.ambox,.portal,.thumb').forEach(el=>el.remove());
-  doc.querySelectorAll('a').forEach(a=>{ const href=a.getAttribute('href')||''; if(href.startsWith('/wiki/')||href.startsWith('/w/')) a.setAttribute('href',`https://${lang}.wikipedia.org${href}`); a.setAttribute('target','_blank'); });
-  doc.querySelectorAll('img').forEach(img=>{ const src=img.getAttribute('src')||''; if(src.startsWith('//')) img.setAttribute('src','https:'+src); img.style.maxWidth='220px'; img.style.height='auto'; img.style.borderRadius='10px'; });
+  doc.querySelectorAll('style,script,.mw-editsection,.reference,.reflist,.navbox,.metadata,.toc,.shortdescription,.hatnote,.sidebar,.ambox,.thumb,.portal').forEach(el=>el.remove());
+  doc.querySelectorAll('a').forEach(a=>{
+    const href=a.getAttribute('href')||'';
+    if(href.startsWith('/wiki/')||href.startsWith('/w/')) a.setAttribute('href',`https://${lang}.wikipedia.org${href}`);
+    a.setAttribute('target','_blank');
+  });
+  doc.querySelectorAll('img').forEach(img=>{
+    const src=img.getAttribute('src')||'';
+    if(src.startsWith('//')) img.setAttribute('src','https:'+src);
+    img.style.maxWidth='220px'; img.style.height='auto'; img.style.borderRadius='10px';
+  });
   const root=doc.querySelector('.mw-parser-output')||doc.body;
   const parts=[]; let count=0;
-  for(const el of Array.from(root.children)){ if(['P','H2','H3','UL','OL','TABLE'].includes(el.tagName)){ if(el.tagName==='TABLE' && !(el.classList.contains('infobox')||el.classList.contains('wikitable'))) continue; parts.push(el.outerHTML); count++; if(count>=12) break; } }
+  for(const el of Array.from(root.children)){
+    if(['P','H2','H3','UL','OL','TABLE'].includes(el.tagName)){
+      if(el.tagName==='TABLE' && !(el.classList.contains('infobox')||el.classList.contains('wikitable'))) continue;
+      parts.push(el.outerHTML); count++;
+      if(count>=18) break;
+    }
+  }
   return parts.join('')||'<p>İçerik alınamadı.</p>';
+}
+async function wikiResolveTitle(title,lang){
+  try{
+    const url=`https://${lang}.wikipedia.org/w/api.php?action=query&redirects=1&titles=${encodeURIComponent(title)}&format=json&origin=*`;
+    const data=await fetch(url).then(r=>r.ok?r.json():null);
+    const pages=data?.query?.pages||{};
+    const first=Object.values(pages)[0];
+    if(first?.title) return first.title;
+  }catch(e){}
+  return title;
+}
+async function wikiSummary(title,lang){
+  try{return await fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title.replace(/ /g,'_'))}`).then(r=>r.ok?r.json():null);}catch(e){return null;}
+}
+async function wikiParseHtml(title,lang){
+  try{
+    const url=`https://${lang}.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(title)}&prop=text|displaytitle&format=json&origin=*`;
+    const data=await fetch(url).then(r=>r.ok?r.json():null);
+    if(data && data.parse) return data.parse;
+  }catch(e){}
+  return null;
+}
+async function buildSummary(n){
+  if(unixLinks[n.name]){
+    return {title:n.name,lang:'unix',sum:{description:'UNİS akademisyen sayfası',extract:'Bu kişi için Kafkas Üniversitesi UNİS kaydı tanımlıdır. Varsa Wikipedia sekmeleri ayrıntılı biyografik içerik gösterebilir; kurumsal bilgi için UNİS sekmesini de kullanabilirsiniz.'}};
+  }
+  for(const lang of ['tr','en']){
+    const title=await wikiLookupExact(n.name,lang);
+    if(title){
+      const resolved=await wikiResolveTitle(title,lang);
+      const sum=await wikiSummary(resolved,lang);
+      if(sum) return {title:resolved,lang,sum};
+    }
+  }
+  return null;
 }
 async function wikiLookupExact(name,lang){
   const tries=[name, name.replace(/İ/g,'I').replace(/ı/g,'i')];
@@ -392,37 +444,58 @@ async function wikiLookupExact(name,lang){
   return null;
 }
 async function buildWikiDoc(name,lang){
-  const title=await wikiLookupExact(name,lang);
-  if(!title) return frameDoc(name,`<p>${lang==='tr'?'Türkçe':'İngilizce'} Wikipedia sayfası bulunamadı.</p>`);
-  let sum=null, parsed=null;
-  try{ sum=await fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title.replace(/ /g,'_'))}`).then(r=>r.ok?r.json():null); }catch(e){}
-  try{ parsed=await fetch(`https://${lang}.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(title)}&prop=text|displaytitle&format=json&origin=*`).then(r=>r.ok?r.json():null); }catch(e){}
+  let title=await wikiLookupExact(name,lang);
+  if(!title) return {ok:false, html:frameDoc(name,`<p>${lang==='tr'?'Türkçe':'İngilizce'} Wikipedia sayfası bulunamadı veya yüklenemedi.</p>`)};
+  title=await wikiResolveTitle(title,lang);
+  const [sum,parsed]=await Promise.all([wikiSummary(title,lang), wikiParseHtml(title,lang)]);
   let body='';
-  if(sum&&sum.extract){ const img=sum.thumbnail?.source?`<img src="${sum.thumbnail.source}" alt="">`:''; body += `${img}<p><strong>${esc(sum.title||title)}</strong>${sum.description?`<br><em>${esc(sum.description)}</em>`:''}<br><br>${esc(sum.extract)}</p>`; }
-  if(parsed?.parse?.text?.['*']) body += sanitizeWikiHtml(parsed.parse.text['*'],lang);
-  if(!body.trim()) body='<p>Sayfa içeriği alınamadı.</p>';
-  body += `<p style="margin-top:12px"><a href="https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g,'_'))}">Wikipedia'da aç</a></p>`;
-  return frameDoc(title,body);
+  if(sum && sum.extract){
+    const img=sum.thumbnail?.source?`<img src="${sum.thumbnail.source}" alt="">`:'';
+    const desc=[sum.description,sum.extract].filter(Boolean).join('<br><br>');
+    body += `${img}<p><strong>${esc(sum.title||title)}</strong>${sum.description?`<br><em>${esc(sum.description)}</em>`:''}<br><br>${esc(sum.extract)}</p>`;
+  }
+  if(parsed?.text?.['*']) body += sanitizeWikiHtml(parsed.text['*'],lang);
+  if(!body.trim()) return {ok:false, html:frameDoc(name,`<p>${lang==='tr'?'Türkçe':'İngilizce'} Wikipedia sayfası bulunamadı veya yüklenemedi.</p>`)};
+  body += `<p style="margin-top:14px"><a href="https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g,'_'))}">Wikipedia'da aç</a></p>`;
+  return {ok:true, html:frameDoc(title,body)};
 }
 function setActiveTab(kind){ [...frameTabs.querySelectorAll('button')].forEach(b=>b.classList.toggle('active', b.dataset.kind===kind)); }
 async function loadTab(n,kind){
   setActiveTab(kind);
   const L=nameSearchLinks(n.name);
-  if(kind==='unix'){ const u=unixLinks[n.name]; infoFrame.removeAttribute('srcdoc'); if(u) infoFrame.src=u; else infoFrame.srcdoc=frameDoc(n.name,'<p>UNİS bağlantısı tanımlı değil.</p>'); return; }
-  if(kind==='google'){ infoFrame.removeAttribute('src'); infoFrame.srcdoc=frameDoc(n.name,`<p>Google sonuçları güvenlik kısıtları nedeniyle içeride gömülemiyor.</p><div class="btns"><a href="${L.google}">Google aç</a></div>`); return; }
-  if(kind==='scholar'){ infoFrame.removeAttribute('src'); infoFrame.srcdoc=frameDoc(n.name,`<p>Google Scholar sayfası güvenlik kısıtları nedeniyle içeride gömülemiyor.</p><div class="btns"><a href="${L.scholar}">Scholar aç</a></div>`); return; }
-  if(kind==='rg'){ infoFrame.removeAttribute('src'); infoFrame.srcdoc=frameDoc(n.name,`<p>ResearchGate sayfası güvenlik kısıtları nedeniyle içeride gömülemiyor.</p><div class="btns"><a href="${L.rg}">ResearchGate aç</a></div>`); return; }
-  if(kind==='trwiki'){ infoFrame.removeAttribute('src'); infoFrame.srcdoc=frameDoc(n.name,'<p>Türkçe Wikipedia yükleniyor...</p>'); infoFrame.srcdoc=await buildWikiDoc(n.name,'tr'); return; }
-  if(kind==='enwiki'){ infoFrame.removeAttribute('src'); infoFrame.srcdoc=frameDoc(n.name,'<p>English Wikipedia is loading...</p>'); infoFrame.srcdoc=await buildWikiDoc(n.name,'en'); return; }
+  if(kind==='unix'){
+    const u=unixLinks[n.name];
+    infoFrame.removeAttribute('srcdoc');
+    if(u) infoFrame.src=u; else infoFrame.srcdoc=frameDoc(n.name,'<p>UNİS bağlantısı tanımlı değil.</p>');
+    return {ok:!!u};
+  }
+  if(kind==='google'){ infoFrame.removeAttribute('src'); infoFrame.srcdoc=frameDoc(n.name,`<p>Google sonuçları güvenlik kısıtları nedeniyle içeride gömülemiyor.</p><div class="btns"><a href="${L.google}">Google aç</a></div>`); return {ok:true}; }
+  if(kind==='scholar'){ infoFrame.removeAttribute('src'); infoFrame.srcdoc=frameDoc(n.name,`<p>Google Scholar sayfası güvenlik kısıtları nedeniyle içeride gömülemiyor.</p><div class="btns"><a href="${L.scholar}">Scholar aç</a></div>`); return {ok:true}; }
+  if(kind==='rg'){ infoFrame.removeAttribute('src'); infoFrame.srcdoc=frameDoc(n.name,`<p>ResearchGate sayfası güvenlik kısıtları nedeniyle içeride gömülemiyor.</p><div class="btns"><a href="${L.rg}">ResearchGate aç</a></div>`); return {ok:true}; }
+  if(kind==='trwiki'){
+    infoFrame.removeAttribute('src');
+    infoFrame.srcdoc=frameDoc(n.name,'<p>Türkçe Wikipedia yükleniyor...</p>');
+    const res=await buildWikiDoc(n.name,'tr');
+    infoFrame.srcdoc=res.html;
+    return {ok:res.ok};
+  }
+  if(kind==='enwiki'){
+    infoFrame.removeAttribute('src');
+    infoFrame.srcdoc=frameDoc(n.name,'<p>English Wikipedia is loading...</p>');
+    const res=await buildWikiDoc(n.name,'en');
+    infoFrame.srcdoc=res.html;
+    return {ok:res.ok};
+  }
+  return {ok:false};
 }
-function openPanel(n){
+async function openPanel(n){
   flashNode(n.id); setSelected(n.id);
   backdrop.classList.add('open');
   const panelEl=backdrop.querySelector('.panel'); if(panelEl) panelEl.scrollTop=0;
   panelTitle.textContent=n.name;
   const lineages=[...new Set((incident[n.id]||[]).map(e=>e.lineage).filter(Boolean))];
   panelMeta.textContent=(n.turkish?'Türk matematikçi / akademisyen':'Matematikçi') + (lineages.length?` | Hat: ${lineages.join(', ')}`:'');
-  panelSummary.innerHTML=`<strong>${esc(n.name)}</strong><br><br>Bu düğüm seçildi. “Hattı İzle” ile danışman-öğrenci zincirini animasyonlu olarak vurgulayabilir, “Haritada Ortala” ile düğümü merkeze alabilirsiniz.`;
+  panelSummary.innerHTML='<strong>Bilgi hazırlanıyor...</strong>';
   frameTabs.innerHTML='';
   const L=nameSearchLinks(n.name);
   const mk=(kind,label,url)=>{ const wrap=document.createElement('span'); wrap.className='tabgrp'; const b=document.createElement('button'); b.textContent=label; b.dataset.kind=kind; b.onclick=()=>loadTab(n,kind); const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener'; a.className='miniout'; a.textContent='↗'; wrap.appendChild(b); wrap.appendChild(a); frameTabs.appendChild(wrap); };
@@ -433,8 +506,22 @@ function openPanel(n){
   mk('scholar','Scholar',L.scholar);
   mk('rg','ResearchGate',L.rg);
   document.getElementById('panelTraceBtn').onclick=()=>traceLineage(n.id);
-  document.getElementById('panelCenterBtn').onclick=()=>focusNodeOnScreen(n, Math.max(currentScale,0.92), 96);
-  loadTab(n, unixLinks[n.name] ? 'unix' : 'trwiki');
+  document.getElementById('panelCenterBtn').onclick=()=>focusNodeOnScreen(n, Math.max(currentScale,0.98), 96);
+
+  const summary=await buildSummary(n);
+  if(summary){
+    const s=summary.sum;
+    const img=s.thumbnail?.source?`<img src="${s.thumbnail.source}" alt="">`:'';
+    panelSummary.innerHTML=`${img}<strong>${esc(summary.title||n.name)}</strong>${s.description?`<br><em>${esc(s.description)}</em>`:''}<br><br>${esc(s.extract||'Özet bulunamadı.')}`;
+  }else{
+    panelSummary.innerHTML='Bu isim için hızlı özet bulunamadı. Ayrıntılı içerik için Wikipedia ve diğer sekmeleri deneyebilirsiniz.';
+  }
+
+  const tr=await loadTab(n,'trwiki');
+  if(!tr.ok){
+    const en=await loadTab(n,'enwiki');
+    if(!en.ok && unixLinks[n.name]) await loadTab(n,'unix');
+  }
 }
 document.getElementById('closePanel').addEventListener('click',()=>backdrop.classList.remove('open'));
 backdrop.addEventListener('click',(e)=>{ if(e.target===backdrop) backdrop.classList.remove('open'); });
