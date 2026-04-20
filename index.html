@@ -151,7 +151,22 @@ const edges=[{"source": "n0", "target": "n27", "sourceName": "Abraham Gotthelf K
 const unixLinks={"Şükrü İlgün": "https://unis.kafkas.edu.tr/akademisyen-detay/sukru.ilgun", "Ebru Saka": "https://unis.kafkas.edu.tr/akademisyen-detay/ebrusaka", "Hatıra Günerhan": "https://unis.kafkas.edu.tr/akademisyen-detay/hatira.gunerhan", "Ruhşen Aldemir Engin": "https://unis.kafkas.edu.tr/akademisyen-detay/ruhsen.aldemir", "Hilal Yıldız": "https://unis.kafkas.edu.tr/akademisyen-detay/hilalyildiz", "Serkan Coştu": "https://unis.kafkas.edu.tr/akademisyen-detay/serkan.costu", "Kübra Gül": "https://unis.kafkas.edu.tr/akademisyen-detay/kubra.gul", "Veysel Nezir": "https://unis.kafkas.edu.tr/akademisyen-detay/veysel.nezir", "Sercan Kazımoğlu": "https://unis.kafkas.edu.tr/akademisyen-detay/sercan.kazimoglu", "Adem Yolcu": "https://unis.kafkas.edu.tr/akademisyen-detay/adem.yolcu", "Taha Yasin Öztürk": "https://unis.kafkas.edu.tr/akademisyen-detay/taha36100", "Yeşim Aküzüm Özen": "https://unis.kafkas.edu.tr/akademisyen-detay/ye%C5%9Fim.ak%C3%BCz%C3%BCm", "Özgür Erdağ": "https://unis.kafkas.edu.tr/akademisyen-detay/ozgur.erdag", "Ömür Deveci": "https://unis.kafkas.edu.tr/akademisyen-detay/omur.deveci", "Rabia Çakan Akpınar": "https://unis.kafkas.edu.tr/akademisyen-detay/rabiacakan", "Gonca Canbek Çelikten": "https://unis.kafkas.edu.tr/akademisyen-detay/gonca.%C3%A7elikten", "Gabil Yagub": "https://unis.kafkas.edu.tr/akademisyen-detay/gabil.yagub", "Nizami Mustafa": "https://unis.kafkas.edu.tr/akademisyen-detay/nizami.mustafa", "Erhan Deniz": "https://unis.kafkas.edu.tr/akademisyen-detay/edeniz", "Yücel Özkan": "https://unis.kafkas.edu.tr/akademisyen-detay/yucel.ozkan", "Nigar Yıldırım Aksoy": "https://unis.kafkas.edu.tr/akademisyen-detay/nyaksoy55"};
 const wikiDirectTR={"Thales": "https://tr.wikipedia.org/wiki/Thales", "Pythagoras": "https://tr.wikipedia.org/wiki/Pisagor", "Euclid": "https://tr.wikipedia.org/wiki/%C3%96klid", "Archimedes": "https://tr.wikipedia.org/wiki/Ar%C5%9Fimet", "El-Harezmi": "https://tr.wikipedia.org/wiki/Harezm%C3%AE", "Nasir al-Din al-Tusi": "https://tr.wikipedia.org/wiki/N%C3%A2s%C4%B1r%C3%BCddin_T%C3%BBs%C3%AE", "Sharaf al-Din al-Tusi": "https://tr.wikipedia.org/wiki/%C5%9Eeref%C3%BCddin_et-T%C3%BBs%C3%AE", "Cahit Arf": "https://tr.wikipedia.org/wiki/Cahit_Arf", "Kerim Erim": "https://tr.wikipedia.org/wiki/Kerim_Erim", "Jean Piaget": "https://tr.wikipedia.org/wiki/Jean_Piaget", "Seymour Papert": "https://tr.wikipedia.org/wiki/Seymour_Papert", "David Hilbert": "https://tr.wikipedia.org/wiki/David_Hilbert", "Karl Theodor Wilhelm Weierstrass": "https://tr.wikipedia.org/wiki/Karl_Weierstrass", "Andrei Nikolayevich Kolmogorov": "https://tr.wikipedia.org/wiki/Andrey_Kolmogorov", "Giuseppe Peano": "https://tr.wikipedia.org/wiki/Giuseppe_Peano"};
 const wikiDirectEN={"Thales": "https://en.wikipedia.org/wiki/Thales", "Pythagoras": "https://en.wikipedia.org/wiki/Pythagoras", "Euclid": "https://en.wikipedia.org/wiki/Euclid", "Archimedes": "https://en.wikipedia.org/wiki/Archimedes", "El-Harezmi": "https://en.wikipedia.org/wiki/Al-Khwarizmi", "Nasir al-Din al-Tusi": "https://en.wikipedia.org/wiki/Nasir_al-Din_al-Tusi", "Sharaf al-Din al-Tusi": "https://en.wikipedia.org/wiki/Sharaf_al-Din_al-Tusi", "Cahit Arf": "https://en.wikipedia.org/wiki/Cahit_Arf", "Jean Piaget": "https://en.wikipedia.org/wiki/Jean_Piaget", "Seymour Papert": "https://en.wikipedia.org/wiki/Seymour_Papert", "David Hilbert": "https://en.wikipedia.org/wiki/David_Hilbert", "Karl Theodor Wilhelm Weierstrass": "https://en.wikipedia.org/wiki/Karl_Weierstrass", "Andrei Nikolayevich Kolmogorov": "https://en.wikipedia.org/wiki/Andrey_Kolmogorov", "Giuseppe Peano": "https://en.wikipedia.org/wiki/Giuseppe_Peano"};
+
+// Sağ üstte üst üste gelen kırmızı dikey hattı ayırmak için Thomson/Wilkes zinciri hafif sağa taşınır.
+(function(){
+  const shiftIds=new Set(['n211','n56','n121','n123','n212','n120','n201','n14','n227','n228','n229','n230','n231','n232']);
+  nodes.forEach(n=>{ if(shiftIds.has(n.id)) n.x += 150; });
+})();
+
 const lineageColors={"arf": "#d12f2f", "hilbert": "#2f6fdf", "kolmogorov": "#178a4b", "peano": "#7b43c8", "thomson": "#0f8a73", "wilkes": "#0f8a73", "papert": "#6e5ae0", "brousseau": "#ef9b32", "sukru": "#c03fd9", "kubra": "#0b8a43", "ancient": "#274f8a", "borel": "#ef9b32", "neutral": "#667085"};
+const uncertainPairs=new Set([
+  'Thales=>Pythagoras',
+  'Pythagoras=>Euclid',
+  'Euclid=>Archimedes',
+  'Archimedes=>El-Harezmi',
+  'El-Harezmi=>Sharaf al-Din al-Tusi'
+]);
+function isUncertainEdge(e){ return uncertainPairs.has(`${e.sourceName}=>${e.targetName}`); }
 
 const svg=document.getElementById('treeSvg');
 const viewport=document.getElementById('viewport');
@@ -269,11 +284,12 @@ function fitInitialView(){
   const card=svg.closest('.card');
   const W=card?card.clientWidth:svg.clientWidth||1200;
   const isMobile=window.innerWidth<=900;
-  const b=getGraphBounds();
   currentScale=isMobile?0.50:0.66;
-  const topPad=isMobile?120:96;
-  panX=((W/currentScale)-(b.minX+b.maxX))/2;
-  panY=(topPad/currentScale)-b.minY;
+  const topPad=isMobile?92:78;
+  const thales=nodes.find(n=>n.name==='Thales')||nodes[0];
+  const thalesCx=thales.x+thales.w/2;
+  panX=(W*0.5/currentScale)-thalesCx;
+  panY=(topPad/currentScale)-thales.y;
   applyView();
 }
 function blinkAndFocus(n){
@@ -301,7 +317,8 @@ function render(){
   edgeLayer.innerHTML=''; nodeLayer.innerHTML='';
   edges.forEach(e=>{
     const color=getEdgeColor(e);
-    const p=createEl('path',{d:bezierPathFor(e),class:'edge-path',stroke:color,'stroke-width':e.width||2.2,'marker-end':`url(#${getMarkerId(color)})`});
+    const extraAttrs=isUncertainEdge(e)?{'stroke-dasharray':'8 6'}:{};
+    const p=createEl('path',Object.assign({d:bezierPathFor(e),class:'edge-path',stroke:color,'stroke-width':e.width||2.2,'marker-end':`url(#${getMarkerId(color)})`},extraAttrs));
     p.dataset.source=e.source; p.dataset.target=e.target; p.dataset.lineage=e.lineage||'';
     edgeLayer.appendChild(p); e._path=p;
   });
