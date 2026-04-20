@@ -133,8 +133,6 @@ body.print-mode.print-lineage .node-group.traced,body.print-mode.print-lineage .
     <button id="traceBtn" title="Seçili hattı izle">Hattı İzle</button>
     <button id="clearTraceBtn" title="Vurguyu temizle">Temizle</button>
     <button id="resetBtn" title="Yerleşimi sıfırla">↺</button>
-    <button id="printLineBtn" title="Seçili hattı PDF olarak yazdır">Hat PDF</button>
-    <button id="printFullBtn" title="Tüm haritayı PDF olarak yazdır">Tam PDF</button>
   </div>
   <div class="legend">
     <span><span class="sw" style="background:#d12f2f"></span>Arf hattı</span><span><span class="sw" style="background:#2f6fdf"></span>Hilbert hattı</span><span><span class="sw" style="background:#178a4b"></span>Kolmogorov hattı</span><span><span class="sw" style="background:#7b43c8"></span>Peano hattı</span><span><span class="sw" style="background:#0f8a73"></span>Yeni Wilkes hattı</span><span><span class="sw" style="background:#ef9b32"></span>Brousseau hattı</span>
@@ -510,21 +508,40 @@ async function buildSummary(n){
   }
   return null;
 }
+function normalizeWikiName(s){
+  return (s||'')
+    .toLocaleLowerCase('tr')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/\([^)]*\)/g,' ')
+    .replace(/[’'"`´.,/#!$%^&*;:{}=_~?-]/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+function isAcceptableWikiTitle(requested, found){
+  const a=normalizeWikiName(requested);
+  const b=normalizeWikiName(found);
+  if(!a || !b) return false;
+  if(a===b) return true;
+  if(b.startsWith(a + ' ')) return true;
+  return false;
+}
 async function wikiLookupExact(name,lang){
+  if(lang==='tr' && wikiDirectTR[name]) return decodeURIComponent(wikiDirectTR[name].split('/wiki/')[1]).replace(/_/g,' ');
+  if(lang==='en' && wikiDirectEN[name]) return decodeURIComponent(wikiDirectEN[name].split('/wiki/')[1]).replace(/_/g,' ');
   const tries=[name, name.replace(/İ/g,'I').replace(/ı/g,'i')];
   for(const term of [...new Set(tries.filter(Boolean))]){
     try{
       const op=`https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(term)}&limit=1&namespace=0&format=json&origin=*`;
       const arr=await fetch(op).then(r=>r.ok?r.json():null);
       const t=arr && arr[1] && arr[1][0] ? arr[1][0] : null;
-      if(t) return t;
+      if(t && isAcceptableWikiTitle(name,t)) return t;
     }catch(e){}
   }
   return null;
 }
 async function buildWikiDoc(name,lang){
   let title=await wikiLookupExact(name,lang);
-  if(!title) return {ok:false, html:frameDoc(name,`<p>${lang==='tr'?'Türkçe':'İngilizce'} Wikipedia sayfası bulunamadı veya yüklenemedi.</p>`) };
+  if(!title) return {ok:false, html:frameDoc(name,`<p>${lang==='tr'?'Türkçe':'İngilizce'} Wikipedia sayfası bulunamadı. Diğer kaynakları kontrol ediniz veya dış bağlantı tuşuna basınız.</p>`) };
   title=await wikiResolveTitle(title,lang);
   const [sum,parsed,longExtract]=await Promise.all([wikiSummary(title,lang), wikiParseHtml(title,lang), wikiExtractLong(title,lang)]);
   let body='';
@@ -542,7 +559,7 @@ async function buildWikiDoc(name,lang){
   if(extractBody && parsedBody && !parsedBody.includes('<h3>')){
     body += `<hr style="border:none;border-top:1px solid #d7e2f1;margin:16px 0">${extractBody}`;
   }
-  if(!body.trim()) return {ok:false, html:frameDoc(name,`<p>${lang==='tr'?'Türkçe':'İngilizce'} Wikipedia sayfası için ayrıntılı içerik alınamadı.</p>`) };
+  if(!body.trim()) return {ok:false, html:frameDoc(name,`<p>${lang==='tr'?'Türkçe':'İngilizce'} Wikipedia sayfası bulunamadı. Diğer kaynakları kontrol ediniz veya dış bağlantı tuşuna basınız.</p>`) };
   body += `<p style="margin-top:14px"><a href="https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g,'_'))}">Wikipedia'da aç</a></p>`;
   return {ok:true, html:frameDoc(title,body)};
 }
@@ -601,7 +618,7 @@ async function openPanel(n){
     const img=s.thumbnail?.source?`<img src="${s.thumbnail.source}" alt="">`:'';
     panelSummary.innerHTML=`${img}<strong>${esc(summary.title||n.name)}</strong>${s.description?`<br><em>${esc(s.description)}</em>`:''}<br><br>${esc(s.extract||'Özet bulunamadı.')}`;
   }else{
-    panelSummary.innerHTML='Bu isim için hızlı özet bulunamadı. Ayrıntılı içerik için Wikipedia ve diğer sekmeleri deneyebilirsiniz.';
+    panelSummary.innerHTML='Bu isim için doğrulanmış hızlı özet bulunamadı. Diğer kaynakları kontrol ediniz veya dış bağlantı tuşlarını kullanınız.';
   }
 
   const tr=await loadTab(n,'trwiki');
@@ -644,30 +661,6 @@ document.getElementById('traceBtn').addEventListener('click',()=>traceLineage(cu
 document.getElementById('clearTraceBtn').addEventListener('click',clearTrace);
 document.getElementById('resetBtn').addEventListener('click',()=>{ localStorage.removeItem(layoutStorageKey); fitInitialView(); });
 
-function startPrint(mode){
-  const badge=document.getElementById('printBadge');
-  body.classList.add('print-mode');
-  body.classList.toggle('print-lineage', mode==='lineage');
-  badge.textContent = mode==='lineage' ? 'Seçili akademik hat - PDF çıktısı' : 'Matematik soyağacı - tam harita PDF çıktısı';
-}
-function endPrint(){
-  body.classList.remove('print-mode','print-lineage');
-}
-window.addEventListener('afterprint', endPrint);
-document.getElementById('printFullBtn').addEventListener('click',()=>{
-  clearTrace();
-  startPrint('full');
-  setTimeout(()=>window.print(), 120);
-});
-document.getElementById('printLineBtn').addEventListener('click',()=>{
-  if(!currentSelectedId){
-    alert('Önce bir matematikçi seçin, sonra hat PDF çıktısı alın.');
-    return;
-  }
-  traceLineage(currentSelectedId);
-  startPrint('lineage');
-  setTimeout(()=>window.print(), 120);
-});
 async function openPersonFromUrl(){
   const params=new URLSearchParams(window.location.search);
   const wanted=params.get('person');
