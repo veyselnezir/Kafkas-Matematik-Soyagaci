@@ -154,8 +154,12 @@ const wikiDirectEN={"Thales": "https://en.wikipedia.org/wiki/Thales", "Pythagora
 
 // Sağ üstte üst üste gelen kırmızı dikey hattı ayırmak için Thomson/Wilkes zinciri hafif sağa taşınır.
 (function(){
-  const shiftIds=new Set(['n211','n56','n121','n123','n212','n120','n201','n14','n227','n228','n229','n230','n231','n232']);
-  nodes.forEach(n=>{ if(shiftIds.has(n.id)) n.x += 150; });
+  const thomsonIds=new Set(['n1','n211','n56','n121','n123','n212','n120','n201','n14']);
+  const wilkesIds=new Set(['n227','n228','n229','n230','n231','n232']);
+  nodes.forEach(n=>{
+    if(thomsonIds.has(n.id)) n.x += 210;
+    if(wilkesIds.has(n.id)) n.x += 320;
+  });
 })();
 
 const lineageColors={"arf": "#d12f2f", "hilbert": "#2f6fdf", "kolmogorov": "#178a4b", "peano": "#7b43c8", "thomson": "#0f8a73", "wilkes": "#0f8a73", "papert": "#6e5ae0", "brousseau": "#ef9b32", "sukru": "#c03fd9", "kubra": "#0b8a43", "ancient": "#274f8a", "borel": "#ef9b32", "neutral": "#667085"};
@@ -191,7 +195,7 @@ edges.forEach((e,i)=>{
   (incident[e.target]??=[]).push(e);
 });
 let currentScale=1, panX=0, panY=0, currentSelectedId=null;
-const layoutStorageKey='kau_soyagaci_layout_v3';
+const layoutStorageKey='kau_soyagaci_layout_v6';
 
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]||m));}
 function createEl(tag,attrs={},text=''){const el=document.createElementNS('http://www.w3.org/2000/svg',tag); for(const[k,v] of Object.entries(attrs)) el.setAttribute(k,v); if(text) el.textContent=text; return el;}
@@ -282,15 +286,24 @@ function getGraphBounds(){
 }
 function fitInitialView(){
   const card=svg.closest('.card');
-  const W=card?card.clientWidth:svg.clientWidth||1200;
+  const W=card?card.clientWidth:(svg.clientWidth||1200);
   const isMobile=window.innerWidth<=900;
-  currentScale=isMobile?0.50:0.66;
-  const topPad=isMobile?92:78;
+  currentScale=isMobile?0.84:0.70;
+  const topPad=isMobile?18:26;
+  const rightNudgePx=isMobile?18:0;
   const thales=nodes.find(n=>n.name==='Thales')||nodes[0];
-  const thalesCx=thales.x+thales.w/2;
-  panX=(W*0.5/currentScale)-thalesCx;
-  panY=(topPad/currentScale)-thales.y;
+  const thalesCx=thales.x + thales.w/2;
+  const thalesCy=thales.y + thales.h/2;
+  panX=(W*0.5/currentScale)-thalesCx + (rightNudgePx/currentScale);
+  panY=(topPad/currentScale)-thalesCy;
   applyView();
+}
+function queueInitialFit(){
+  fitInitialView();
+  requestAnimationFrame(fitInitialView);
+  setTimeout(fitInitialView, 80);
+  setTimeout(fitInitialView, 240);
+  setTimeout(fitInitialView, 700);
 }
 function blinkAndFocus(n){
   document.querySelectorAll('.node-group').forEach(g=>g.classList.remove('searchhit','blink'));
@@ -420,7 +433,7 @@ function openPanel(n){
   mk('scholar','Scholar',L.scholar);
   mk('rg','ResearchGate',L.rg);
   document.getElementById('panelTraceBtn').onclick=()=>traceLineage(n.id);
-  document.getElementById('panelCenterBtn').onclick=()=>focusNodeOnScreen(n, Math.max(currentScale,0.78), 126);
+  document.getElementById('panelCenterBtn').onclick=()=>focusNodeOnScreen(n, Math.max(currentScale,0.92), 96);
   loadTab(n, unixLinks[n.name] ? 'unix' : 'trwiki');
 }
 document.getElementById('closePanel').addEventListener('click',()=>backdrop.classList.remove('open'));
@@ -460,8 +473,10 @@ document.getElementById('resetBtn').addEventListener('click',()=>{ localStorage.
 const saved=localStorage.getItem(layoutStorageKey);
 if(saved){ try{ JSON.parse(saved).forEach(([id,x,y])=>{ if(byId[id]){ byId[id].x=x; byId[id].y=y; } }); }catch(e){} }
 render();
-fitInitialView();
-window.addEventListener('resize',()=>{ if(!backdrop.classList.contains('open')) fitInitialView(); });
+queueInitialFit();
+window.addEventListener('load', queueInitialFit);
+window.addEventListener('pageshow', queueInitialFit);
+window.addEventListener('resize',()=>{ if(!backdrop.classList.contains('open')) queueInitialFit(); });
 </script>
 </body>
 </html>
