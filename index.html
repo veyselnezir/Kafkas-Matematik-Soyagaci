@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Kafkas Üniversitesi - Matematik Soyağacı</title>
+<title>Kafkas Üniversitesi - Matematik Soyağacı</title><!-- v13 layout key refreshed -->
 <style>
 :root{
   --bg:#f4f6fb; --card:#ffffff; --text:#1f2a44; --muted:#5f6f8f; --soft:#d7e2f1;
@@ -249,7 +249,7 @@ edges.forEach((e,i)=>{
   (incident[e.target]??=[]).push(e);
 });
 let currentScale=1, panX=0, panY=0, currentSelectedId=null;
-const layoutStorageKey='kau_soyagaci_layout_v10';
+const layoutStorageKey='kau_soyagaci_layout_v13';
 
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]||m));}
 function createEl(tag,attrs={},text=''){const el=document.createElementNS('http://www.w3.org/2000/svg',tag); for(const[k,v] of Object.entries(attrs)) el.setAttribute(k,v); if(text) el.textContent=text; return el;}
