@@ -255,13 +255,26 @@ function focusNodeOnScreen(n, scale=currentScale, yPad=110){
   panY=(Math.max(90,yPad)/currentScale)-cy;
   applyView();
 }
+function getGraphBounds(){
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  nodes.forEach(n=>{
+    minX=Math.min(minX,n.x);
+    minY=Math.min(minY,n.y);
+    maxX=Math.max(maxX,n.x+n.w);
+    maxY=Math.max(maxY,n.y+n.h);
+  });
+  return {minX,minY,maxX,maxY,width:maxX-minX,height:maxY-minY};
+}
 function fitInitialView(){
   const card=svg.closest('.card');
   const W=card?card.clientWidth:svg.clientWidth||1200;
   const isMobile=window.innerWidth<=900;
+  const b=getGraphBounds();
   currentScale=isMobile?0.50:0.66;
-  const th=byName['Thales']||nodes[0];
-  focusNodeOnScreen(th,currentScale,isMobile?120:96);
+  const topPad=isMobile?120:96;
+  panX=((W/currentScale)-(b.minX+b.maxX))/2;
+  panY=(topPad/currentScale)-b.minY;
+  applyView();
 }
 function blinkAndFocus(n){
   document.querySelectorAll('.node-group').forEach(g=>g.classList.remove('searchhit','blink'));
