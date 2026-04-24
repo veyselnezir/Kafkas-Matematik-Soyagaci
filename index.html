@@ -279,7 +279,8 @@ edges.forEach((e,i)=>{
   (incident[e.target]??=[]).push(e);
 });
 let currentScale=1, panX=0, panY=0, currentSelectedId=null;
-const layoutStorageKey='kau_soyagaci_layout_v14';
+const layoutStorageKey='kau_soyagaci_layout_v18';
+try{['kau_soyagaci_layout_v14','kau_soyagaci_layout_v15','kau_soyagaci_layout_v16','kau_soyagaci_layout_v17'].forEach(k=>localStorage.removeItem(k));}catch(e){}
 
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]||m));}
 function createEl(tag,attrs={},text=''){const el=document.createElementNS('http://www.w3.org/2000/svg',tag); for(const[k,v] of Object.entries(attrs)) el.setAttribute(k,v); if(text) el.textContent=text; return el;}
@@ -692,7 +693,7 @@ document.getElementById('zoomOutBtn').addEventListener('click',()=>{ currentScal
 document.getElementById('fitBtn').addEventListener('click',fitInitialView);
 document.getElementById('traceBtn').addEventListener('click',()=>traceLineage(currentSelectedId));
 document.getElementById('clearTraceBtn').addEventListener('click',clearTrace);
-document.getElementById('resetBtn').addEventListener('click',()=>{ localStorage.removeItem(layoutStorageKey); fitInitialView(); });
+document.getElementById('resetBtn').addEventListener('click',()=>{ try{['kau_soyagaci_layout_v14','kau_soyagaci_layout_v15','kau_soyagaci_layout_v16','kau_soyagaci_layout_v17',layoutStorageKey].forEach(k=>localStorage.removeItem(k));}catch(e){} fitInitialView(); });
 
 async function openPersonFromUrl(){
   const params=new URLSearchParams(window.location.search);
